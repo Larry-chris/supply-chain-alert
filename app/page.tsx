@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { createClient } from "@supabase/supabase-js"
-import { useRouter } from "next/navigation" // Pour rediriger
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Activity, ShieldAlert, Send, Loader2, AlertTriangle, MapPin, History, LogOut, User } from "lucide-react"
+import { Activity, ShieldAlert, Send, Loader2, MapPin, History, LogOut, User } from "lucide-react"
 import Link from "next/link"
 
 const supabase = createClient(
@@ -17,12 +17,11 @@ const supabase = createClient(
 export default function Dashboard() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [userEmail, setUserEmail] = useState("") // Pour afficher l'email
+  const [userEmail, setUserEmail] = useState("")
   const [depart, setDepart] = useState("")
   const [arrivee, setArrivee] = useState("")
   const [currentResult, setCurrentResult] = useState<any>(null)
 
-  // SÉCURITÉ : On vérifie au chargement si le mec est connecté
   useEffect(() => {
     verifierSession()
   }, [])
@@ -30,7 +29,6 @@ export default function Dashboard() {
   async function verifierSession() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      // Pas connecté ? Dehors !
       router.push("/login")
     } else {
       setUserEmail(user.email || "")
@@ -48,7 +46,6 @@ export default function Dashboard() {
     setCurrentResult(null)
 
     try {
-      // 1. On appelle l'IA (qui ne sauvegarde pas)
       const response = await fetch("/api/test-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,28 +53,24 @@ export default function Dashboard() {
       })
       const data = await response.json()
 
-      // 2. C'EST ICI QU'ON SAUVEGARDE (Côté client sécurisé)
-      // Supabase ajoute automatiquement le user_id grâce à la session active
       const { error } = await supabase.from('routes').insert([{
         origin: depart,
         destination: arrivee,
         ai_report: data.reponse_ia,
         risk_score: data.score,
         status: 'Analyzed',
-        // user_id est ajouté auto par Supabase car on est connectés
       }])
 
       if (error) console.error("Erreur sauvegarde", error)
-
       setCurrentResult(data)
     } catch (e) { alert("Erreur analyse") }
     finally { setLoading(false) }
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-slate-100 font-sans flex">
+    <div className="min-h-screen bg-[#0B1120] text-slate-100 font-sans flex pb-20 md:pb-0">
 
-      {/* SIDEBAR */}
+      {/* SIDEBAR (ORDINATEUR SEULEMENT) */}
       <aside className="fixed left-0 top-0 h-full w-64 border-r border-slate-800 bg-[#0F172A] p-6 hidden md:flex flex-col">
         <div className="flex items-center gap-2 font-bold text-xl text-blue-500 mb-10">
           <ShieldAlert className="h-8 w-8" /> <span>SupplyAlert</span>
@@ -88,6 +81,11 @@ export default function Dashboard() {
               <Activity className="h-4 w-4 text-blue-400" /> Dashboard
             </Button>
           </Link>
+          <Link href="#">
+            <Button variant="ghost" className="w-full justify-start gap-3 text-slate-400 cursor-not-allowed opacity-50">
+              <MapPin className="h-4 w-4" /> Cartographie (Bientôt)
+            </Button>
+          </Link>
           <Link href="/historique">
             <Button variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-white hover:bg-slate-800">
               <History className="h-4 w-4" /> Historique
@@ -95,7 +93,6 @@ export default function Dashboard() {
           </Link>
         </nav>
 
-        {/* INFO USER + LOGOUT */}
         <div className="mt-auto pt-6 border-t border-slate-800 space-y-4">
           <div className="flex items-center gap-2 text-xs text-slate-400 overflow-hidden">
             <User className="h-4 w-4" />
@@ -107,11 +104,27 @@ export default function Dashboard() {
         </div>
       </aside>
 
+      {/* BARRE DE NAVIGATION MOBILE (TÉLÉPHONE SEULEMENT) */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-[#0F172A] border-t border-slate-800 p-4 flex justify-around items-center z-50">
+        <Link href="/" className="flex flex-col items-center text-blue-500">
+          <Activity className="h-6 w-6" />
+          <span className="text-[10px] mt-1 font-bold">Scan</span>
+        </Link>
+        <Link href="/historique" className="flex flex-col items-center text-slate-400 hover:text-white">
+          <History className="h-6 w-6" />
+          <span className="text-[10px] mt-1">Historique</span>
+        </Link>
+        <button onClick={deconnexion} className="flex flex-col items-center text-slate-400 hover:text-red-500">
+          <LogOut className="h-6 w-6" />
+          <span className="text-[10px] mt-1">Sortir</span>
+        </button>
+      </div>
+
       {/* MAIN CONTENT */}
       <main className="md:ml-64 p-8 w-full flex flex-col justify-center min-h-[80vh] max-w-5xl mx-auto">
         <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold mb-4">Scanner de Route Maritime</h1>
-          <p className="text-slate-400">Espace Sécurisé • Analyse temps réel</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Scanner de Route Maritime</h1>
+          <p className="text-slate-400 text-sm md:text-base">Espace Sécurisé • Analyse temps réel</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
@@ -137,8 +150,8 @@ export default function Dashboard() {
           {/* RÉSULTAT */}
           <div className="transition-all duration-500">
             {!currentResult && !loading && (
-              <div className="h-full flex flex-col items-center justify-center text-slate-600 border-2 border-dashed border-slate-800 rounded-xl p-10">
-                <MapPin className="h-16 w-16 mb-4 opacity-20" />
+              <div className="h-full flex flex-col items-center justify-center text-slate-600 border-2 border-dashed border-slate-800 rounded-xl p-10 min-h-[200px]">
+                <MapPin className="h-12 w-12 mb-4 opacity-20" />
                 <p>Résultat sécurisé ici.</p>
               </div>
             )}
@@ -158,7 +171,7 @@ export default function Dashboard() {
                     <p className="text-xl font-semibold text-white">{depart} ➝ {arrivee}</p>
                   </div>
                   <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
-                    <p className="text-slate-300 leading-relaxed whitespace-pre-line">{currentResult.reponse_ia}</p>
+                    <p className="text-slate-300 leading-relaxed whitespace-pre-line text-sm md:text-base">{currentResult.reponse_ia}</p>
                   </div>
                   <Button className="w-full bg-green-600 hover:bg-green-500 text-white font-bold" onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(currentResult.reponse_ia)}`, '_blank')}>
                     WhatsApp
