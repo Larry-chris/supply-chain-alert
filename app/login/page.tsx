@@ -32,7 +32,7 @@ export default function LoginPage() {
                 // CONNEXION
                 const { error } = await supabase.auth.signInWithPassword({ email, password })
                 if (error) throw error
-                router.push("/") // Redirection vers le Dashboard
+                router.push("/dashboard") // Redirection vers le Dashboard
             }
         } catch (error: any) {
             alert(error.message)

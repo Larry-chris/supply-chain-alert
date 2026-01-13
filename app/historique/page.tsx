@@ -53,7 +53,7 @@ export default function HistoriquePage() {
                     <ShieldAlert className="h-8 w-8" /> <span>SupplyAlert</span>
                 </div>
                 <nav className="space-y-2">
-                    <Link href="/">
+                    <Link href="/dashboard">
                         <Button variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-white hover:bg-slate-800">
                             <Activity className="h-4 w-4" /> Dashboard
                         </Button>
