@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Activity, ShieldAlert, Send, Loader2, MapPin, History, LogOut, User } from "lucide-react"
+import { Activity, ShieldAlert, Send, Loader2, MapPin, History, LogOut, User, Package } from "lucide-react"
 import Link from "next/link"
 
 const supabase = createClient(
@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [userEmail, setUserEmail] = useState("")
   const [depart, setDepart] = useState("")
   const [arrivee, setArrivee] = useState("")
+  const [produit, setProduit] = useState("")
   const [currentResult, setCurrentResult] = useState<any>(null)
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function Dashboard() {
       const response = await fetch("/api/test-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ depart, arrivee }),
+        body: JSON.stringify({ depart, arrivee, produit }),
       })
       const data = await response.json()
 
@@ -123,14 +124,14 @@ export default function Dashboard() {
       {/* MAIN CONTENT */}
       <main className="md:ml-64 p-8 w-full flex flex-col justify-center min-h-[80vh] max-w-5xl mx-auto">
         <div className="mb-10 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Maritime Route Scanner</h1>
-          <p className="text-slate-400 text-sm md:text-base">Secure Space • Real-time Analysis</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Smart Route Scanner</h1>
+          <p className="text-slate-400 text-sm md:text-base">Context-Aware AI • Real-time Analysis</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
           {/* FORM */}
           <Card className="bg-[#1E293B] border-slate-700 shadow-2xl">
-            <CardHeader><CardTitle>New Analysis</CardTitle></CardHeader>
+            <CardHeader><CardTitle>New Contextual Analysis</CardTitle></CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <label className="text-xs uppercase font-bold text-slate-500">Origin</label>
@@ -140,9 +141,26 @@ export default function Dashboard() {
                 <label className="text-xs uppercase font-bold text-slate-500">Destination</label>
                 <Input value={arrivee} onChange={(e) => setArrivee(e.target.value)} className="bg-slate-900 border-slate-600 h-12 text-white placeholder:text-slate-500" placeholder="ex: New York" />
               </div>
+
+              {/* CHAMP PRODUIT MIS À JOUR */}
+              <div className="space-y-2">
+                <label className="text-xs uppercase font-bold text-blue-400 flex items-center gap-2">
+                  <Package className="h-3 w-3" /> Product Description & Context
+                </label>
+                <Input
+                  value={produit}
+                  onChange={(e) => setProduit(e.target.value)}
+                  className="bg-slate-900 border-blue-900/50 h-12 text-white placeholder:text-slate-500 focus:border-blue-500"
+                  placeholder="e.g., Christmas Toys (Deadline Dec 20), Fresh Bananas..."
+                />
+                <p className="text-[10px] text-slate-500">
+                  Tip: Mention specific events (Christmas, Valentine) or deadlines for a precise Business Impact score.
+                </p>
+              </div>
+
               <Button onClick={lancerAnalyse} disabled={loading} className="w-full bg-blue-600 hover:bg-blue-500 h-14 text-lg font-semibold shadow-lg shadow-blue-900/20">
                 {loading ? <Loader2 className="animate-spin mr-2" /> : <Send className="mr-2 h-5 w-5" />}
-                {loading ? "Scanning..." : "Scan Route Now"}
+                {loading ? "Analyzing Context..." : "Analyze Impact"}
               </Button>
             </CardContent>
           </Card>
@@ -152,7 +170,7 @@ export default function Dashboard() {
             {!currentResult && !loading && (
               <div className="h-full flex flex-col items-center justify-center text-slate-600 border-2 border-dashed border-slate-800 rounded-xl p-10 min-h-[200px]">
                 <MapPin className="h-12 w-12 mb-4 opacity-20" />
-                <p>Results will appear here.</p>
+                <p>Contextual results will appear here.</p>
               </div>
             )}
             {currentResult && (
@@ -160,7 +178,7 @@ export default function Dashboard() {
                 <CardHeader className="border-b border-slate-700/50 pb-4">
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-white">Analysis Result</CardTitle>
-                    <div className={`px-4 py-1 rounded-full text-sm font-bold border ${currentResult.score > 50 ? 'bg-red-500/20 text-red-400 border-red-500' : 'bg-green-500/20 text-green-400 border-green-500'}`}>
+                    <div className={`px-4 py-1 rounded-full text-sm font-bold border ${currentResult.score > 70 ? 'bg-red-500/20 text-red-400 border-red-500' : currentResult.score > 40 ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500' : 'bg-green-500/20 text-green-400 border-green-500'}`}>
                       Risk: {currentResult.score}/100
                     </div>
                   </div>
