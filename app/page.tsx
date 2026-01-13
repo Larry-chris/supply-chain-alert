@@ -20,7 +20,7 @@ export default function LandingPage() {
                         </Link>
                         <Link href="/login">
                             <Button className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-6">
-                                Try for Free
+                                Get Early Access
                             </Button>
                         </Link>
                     </div>
@@ -53,8 +53,9 @@ export default function LandingPage() {
                     </Link>
                 </div>
 
-                <p className="mt-6 text-sm text-slate-500">
-                    No credit card required • 100% Free during Beta
+                <p className="mt-6 text-sm text-slate-500 flex items-center justify-center gap-2">
+                    <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                    Early Bird Offer • 50% OFF for the first 20 users
                 </p>
             </section>
 
