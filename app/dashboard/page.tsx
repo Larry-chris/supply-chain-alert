@@ -36,11 +36,6 @@ export default function Dashboard() {
     }
   }
 
-  async function deconnexion() {
-    await supabase.auth.signOut()
-    router.push("/login")
-  }
-
   async function lancerAnalyse() {
     if (!depart || !arrivee) return
     setLoading(true)
@@ -52,8 +47,17 @@ export default function Dashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ depart, arrivee, produit }),
       })
+
       const data = await response.json()
 
+      // VERIFICATION D'ERREUR ICI
+      if (data.error) {
+        alert("AI Error: " + data.error)
+        setLoading(false)
+        return // On arrête tout
+      }
+
+      // Si tout va bien, on sauvegarde
       const { error } = await supabase.from('routes').insert([{
         origin: depart,
         destination: arrivee,
@@ -64,8 +68,12 @@ export default function Dashboard() {
 
       if (error) console.error("Save error", error)
       setCurrentResult(data)
-    } catch (e) { alert("Analysis error") }
-    finally { setLoading(false) }
+
+    } catch (e) {
+      alert("Network or Server Error. Please try again.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
