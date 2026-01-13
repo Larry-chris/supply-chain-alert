@@ -61,16 +61,16 @@ export default function Dashboard() {
         status: 'Analyzed',
       }])
 
-      if (error) console.error("Erreur sauvegarde", error)
+      if (error) console.error("Save error", error)
       setCurrentResult(data)
-    } catch (e) { alert("Erreur analyse") }
+    } catch (e) { alert("Analysis error") }
     finally { setLoading(false) }
   }
 
   return (
     <div className="min-h-screen bg-[#0B1120] text-slate-100 font-sans flex pb-20 md:pb-0">
 
-      {/* SIDEBAR (ORDINATEUR SEULEMENT) */}
+      {/* SIDEBAR */}
       <aside className="fixed left-0 top-0 h-full w-64 border-r border-slate-800 bg-[#0F172A] p-6 hidden md:flex flex-col">
         <div className="flex items-center gap-2 font-bold text-xl text-blue-500 mb-10">
           <ShieldAlert className="h-8 w-8" /> <span>SupplyAlert</span>
@@ -83,12 +83,12 @@ export default function Dashboard() {
           </Link>
           <Link href="#">
             <Button variant="ghost" className="w-full justify-start gap-3 text-slate-400 cursor-not-allowed opacity-50">
-              <MapPin className="h-4 w-4" /> Cartographie (Bientôt)
+              <MapPin className="h-4 w-4" /> Map (Soon)
             </Button>
           </Link>
           <Link href="/historique">
             <Button variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-white hover:bg-slate-800">
-              <History className="h-4 w-4" /> Historique
+              <History className="h-4 w-4" /> History
             </Button>
           </Link>
         </nav>
@@ -99,82 +99,82 @@ export default function Dashboard() {
             <span className="truncate">{userEmail}</span>
           </div>
           <Button onClick={deconnexion} variant="outline" className="w-full border-slate-700 text-slate-400 hover:text-white hover:bg-red-900/20 hover:border-red-900">
-            <LogOut className="h-4 w-4 mr-2" /> Déconnexion
+            <LogOut className="h-4 w-4 mr-2" /> Logout
           </Button>
         </div>
       </aside>
 
-      {/* BARRE DE NAVIGATION MOBILE (TÉLÉPHONE SEULEMENT) */}
+      {/* MOBILE NAV */}
       <div className="md:hidden fixed bottom-0 left-0 w-full bg-[#0F172A] border-t border-slate-800 p-4 flex justify-around items-center z-50">
-        <Link href="/" className="flex flex-col items-center text-blue-500">
+        <Link href="/dashboard" className="flex flex-col items-center text-blue-500">
           <Activity className="h-6 w-6" />
           <span className="text-[10px] mt-1 font-bold">Scan</span>
         </Link>
         <Link href="/historique" className="flex flex-col items-center text-slate-400 hover:text-white">
           <History className="h-6 w-6" />
-          <span className="text-[10px] mt-1">Historique</span>
+          <span className="text-[10px] mt-1">History</span>
         </Link>
         <button onClick={deconnexion} className="flex flex-col items-center text-slate-400 hover:text-red-500">
           <LogOut className="h-6 w-6" />
-          <span className="text-[10px] mt-1">Sortir</span>
+          <span className="text-[10px] mt-1">Exit</span>
         </button>
       </div>
 
       {/* MAIN CONTENT */}
       <main className="md:ml-64 p-8 w-full flex flex-col justify-center min-h-[80vh] max-w-5xl mx-auto">
         <div className="mb-10 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Scanner de Route Maritime</h1>
-          <p className="text-slate-400 text-sm md:text-base">Espace Sécurisé • Analyse temps réel</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Maritime Route Scanner</h1>
+          <p className="text-slate-400 text-sm md:text-base">Secure Space • Real-time Analysis</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-          {/* FORMULAIRE */}
+          {/* FORM */}
           <Card className="bg-[#1E293B] border-slate-700 shadow-2xl">
-            <CardHeader><CardTitle>Nouvelle Analyse</CardTitle></CardHeader>
+            <CardHeader><CardTitle>New Analysis</CardTitle></CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <label className="text-xs uppercase font-bold text-slate-500">Départ</label>
+                <label className="text-xs uppercase font-bold text-slate-500">Origin</label>
                 <Input value={depart} onChange={(e) => setDepart(e.target.value)} className="bg-slate-900 border-slate-600 h-12 text-white placeholder:text-slate-500" placeholder="ex: Shanghai" />
               </div>
               <div className="space-y-2">
-                <label className="text-xs uppercase font-bold text-slate-500">Arrivée</label>
-                <Input value={arrivee} onChange={(e) => setArrivee(e.target.value)} className="bg-slate-900 border-slate-600 h-12 text-white placeholder:text-slate-500" placeholder="ex: Le Havre" />
+                <label className="text-xs uppercase font-bold text-slate-500">Destination</label>
+                <Input value={arrivee} onChange={(e) => setArrivee(e.target.value)} className="bg-slate-900 border-slate-600 h-12 text-white placeholder:text-slate-500" placeholder="ex: New York" />
               </div>
               <Button onClick={lancerAnalyse} disabled={loading} className="w-full bg-blue-600 hover:bg-blue-500 h-14 text-lg font-semibold shadow-lg shadow-blue-900/20">
                 {loading ? <Loader2 className="animate-spin mr-2" /> : <Send className="mr-2 h-5 w-5" />}
-                {loading ? "Scan en cours..." : "Scanner maintenant"}
+                {loading ? "Scanning..." : "Scan Route Now"}
               </Button>
             </CardContent>
           </Card>
 
-          {/* RÉSULTAT */}
+          {/* RESULT */}
           <div className="transition-all duration-500">
             {!currentResult && !loading && (
               <div className="h-full flex flex-col items-center justify-center text-slate-600 border-2 border-dashed border-slate-800 rounded-xl p-10 min-h-[200px]">
                 <MapPin className="h-12 w-12 mb-4 opacity-20" />
-                <p>Résultat sécurisé ici.</p>
+                <p>Results will appear here.</p>
               </div>
             )}
             {currentResult && (
               <Card className="bg-[#1E293B] border-blue-500/50 shadow-2xl animate-in slide-in-from-right-10 ring-1 ring-blue-500/20">
                 <CardHeader className="border-b border-slate-700/50 pb-4">
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-white">Résultat</CardTitle>
+                    <CardTitle className="text-white">Analysis Result</CardTitle>
                     <div className={`px-4 py-1 rounded-full text-sm font-bold border ${currentResult.score > 50 ? 'bg-red-500/20 text-red-400 border-red-500' : 'bg-green-500/20 text-green-400 border-green-500'}`}>
-                      Risque : {currentResult.score}/100
+                      Risk: {currentResult.score}/100
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-6">
                   <div>
-                    <h3 className="text-slate-400 text-xs uppercase font-bold mb-2">Trajet</h3>
+                    <h3 className="text-slate-400 text-xs uppercase font-bold mb-2">Route</h3>
                     <p className="text-xl font-semibold text-white">{depart} ➝ {arrivee}</p>
                   </div>
                   <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
                     <p className="text-slate-300 leading-relaxed whitespace-pre-line text-sm md:text-base">{currentResult.reponse_ia}</p>
                   </div>
                   <Button className="w-full bg-green-600 hover:bg-green-500 text-white font-bold" onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(currentResult.reponse_ia)}`, '_blank')}>
-                    WhatsApp
+                    Share via WhatsApp
                   </Button>
                 </CardContent>
               </Card>

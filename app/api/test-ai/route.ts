@@ -1,5 +1,4 @@
 import { GoogleGenerativeAI, GenerationConfig } from "@google/generative-ai";
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -7,9 +6,9 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { depart, arrivee } = body;
 
-        if (!depart || !arrivee) return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
+        if (!depart || !arrivee) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
 
-        // 1. TAVILY (Actus récentes 30 jours)
+        // 1. TAVILY (English Search)
         const query = `maritime shipping risk news ${depart} to ${arrivee} delays conflict weather storm`;
         const tavilyResponse = await fetch("https://api.tavily.com/search", {
             method: "POST",
@@ -21,75 +20,72 @@ export async function POST(req: Request) {
             })
         });
         const searchData = await tavilyResponse.json();
-        const contextNews = searchData.results ? searchData.results.map((r: any) => `[${r.published_date}] ${r.content}`).join("\n") : "Pas d'actus.";
+        const contextNews = searchData.results ? searchData.results.map((r: any) => `[${r.published_date}] ${r.content}`).join("\n") : "No recent news.";
 
-        // 2. GEMINI (Retour à la version Stable + Température équilibrée)
+        // 2. GEMINI (English Prompt)
         const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
 
         const generationConfig: GenerationConfig = {
-            temperature: 1.0,      // Équilibre parfait entre Rigueur et Créativité
+            temperature: 0.7,
+            maxOutputTokens: 1000,
         };
 
-        // On utilise le modèle Flash standard (fiable)
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", generationConfig });
 
         const prompt = `
-      Rôle : Expert maritime. Date : ${new Date().toLocaleDateString()}.
-      Route : ${depart} vers ${arrivee}.
+      Role: Maritime Supply Chain Risk Expert. Date: ${new Date().toLocaleDateString()}.
+      Route: ${depart} to ${arrivee}.
       
-      Actus récentes :
+      Recent News:
       ${contextNews}
 
-      RÈGLES STRICTES DE NOTATION (ÉCHELLE 0-100) :
-      - 0 à 10 : RISQUE INEXISTANT. Route fluide. Météo calme.
-      - 11 à 40 : RISQUE FAIBLE. Petits retards possibles, vigilance normale.
-      - 41 à 70 : RISQUE MOYEN/ÉLEVÉ. Mauvaise météo, tensions politiques, grèves.
-      - 71 à 100 : RISQUE MAJEUR. Guerre, Tempête Violente, Route Bloquée.
+      SCORING RULES (0-100 Scale):
+      - 0-10: NO RISK. Smooth sailing.
+      - 11-40: LOW RISK. Minor delays, standard vigilance.
+      - 41-70: MEDIUM/HIGH RISK. Bad weather, political tension, strikes.
+      - 71-100: CRITICAL RISK. War, Severe Storm, Blockade, Route diversion.
 
-      IMPORTANT : Si tu mentionnes une "Tempête", un "Conflit" ou un "Détour", le score DOIT être supérieur à 60.
+      IMPORTANT: If you mention "Storm", "Conflict", "War" or "Diversion", the score MUST be above 60.
 
-      FORMAT DE RÉPONSE OBLIGATOIRE (Sépare par des barres verticales | ) :
-      SCORE|EXPLICATION|CONCLUSION
+      REQUIRED OUTPUT FORMAT (Separate with vertical bars | ):
+      SCORE|EXPLANATION|VERDICT
 
-      Détails :
-      - SCORE : Un chiffre entier (ex: 85).
-      - EXPLICATION : 3 phrases claires et complètes.
-      - CONCLUSION : Une phrase courte commençant par "VERDICT :".
+      Details:
+      - SCORE: Integer (e.g., 85).
+      - EXPLANATION: 3 clear sentences in English explaining the situation.
+      - VERDICT: Short conclusion starting with "VERDICT:".
     `;
 
         const result = await model.generateContent(prompt);
         const rawText = result.response.text();
 
-        // 3. PARSING ROBUSTE
+        // 3. PARSING
         const parts = rawText.split("|");
         let score = 0;
         let textIA = rawText;
 
         if (parts.length >= 2) {
-            // Nettoyage du score pour éviter les bugs
             score = parseInt(parts[0].replace(/[^0-9]/g, '').trim());
             if (isNaN(score)) score = 50;
 
             const explication = parts[1].trim();
             const conclusion = parts[2] ? parts[2].trim() : "";
 
-            // Filet de sécurité logique
+            // Safety Check
             const fullText = (explication + conclusion).toLowerCase();
-            const motsDangereux = ["tempête", "sévère", "ouragan", "guerre", "attaque", "blocus", "détour", "déviation"];
+            const dangerousWords = ["storm", "severe", "hurricane", "war", "attack", "blockade", "diversion", "red sea"];
 
-            // Si texte dangereux mais score bas -> on force le score rouge
-            if (motsDangereux.some(mot => fullText.includes(mot)) && score < 50) {
+            if (dangerousWords.some(mot => fullText.includes(mot)) && score < 50) {
                 score = 75;
             }
 
             textIA = `${explication}\n\n${conclusion}`;
         }
 
-        return NextResponse.json({ message: "Succès", reponse_ia: textIA, score: score });
+        return NextResponse.json({ message: "Success", reponse_ia: textIA, score: score });
 
     } catch (error: any) {
-        console.error("Erreur API:", error);
-        // En cas d'erreur, on renvoie un message clair au lieu de planter
-        return NextResponse.json({ error: "Erreur serveur", details: error.message }, { status: 500 });
+        console.error("API Error:", error);
+        return NextResponse.json({ error: "Server Error", details: error.message }, { status: 500 });
     }
 }

@@ -28,7 +28,6 @@ export default function HistoriquePage() {
     }
 
     async function chargerHistorique() {
-        // Sécurité : Supabase ne renverra que TES données grâce à la règle RLS
         const { data } = await supabase
             .from('routes')
             .select('*')
@@ -47,7 +46,7 @@ export default function HistoriquePage() {
     return (
         <div className="min-h-screen bg-[#0B1120] text-slate-100 font-sans flex pb-20 md:pb-0">
 
-            {/* SIDEBAR (PC) */}
+            {/* SIDEBAR */}
             <aside className="fixed left-0 top-0 h-full w-64 border-r border-slate-800 bg-[#0F172A] p-6 hidden md:flex flex-col">
                 <div className="flex items-center gap-2 font-bold text-xl text-blue-500 mb-10">
                     <ShieldAlert className="h-8 w-8" /> <span>SupplyAlert</span>
@@ -60,44 +59,44 @@ export default function HistoriquePage() {
                     </Link>
                     <Link href="#">
                         <Button variant="ghost" className="w-full justify-start gap-3 text-slate-400 cursor-not-allowed opacity-50">
-                            <MapPin className="h-4 w-4" /> Cartographie (Bientôt)
+                            <MapPin className="h-4 w-4" /> Map (Soon)
                         </Button>
                     </Link>
                     <Link href="/historique">
                         <Button variant="ghost" className="w-full justify-start gap-3 bg-slate-800 text-white font-medium">
-                            <History className="h-4 w-4 text-blue-400" /> Historique
+                            <History className="h-4 w-4 text-blue-400" /> History
                         </Button>
                     </Link>
                 </nav>
                 <div className="mt-auto pt-6 border-t border-slate-800">
                     <Button onClick={deconnexion} variant="outline" className="w-full border-slate-700 text-slate-400 hover:text-white hover:bg-red-900/20 hover:border-red-900">
-                        <LogOut className="h-4 w-4 mr-2" /> Déconnexion
+                        <LogOut className="h-4 w-4 mr-2" /> Logout
                     </Button>
                 </div>
             </aside>
 
-            {/* BARRE MOBILE (TÉLÉPHONE) */}
+            {/* MOBILE NAV */}
             <div className="md:hidden fixed bottom-0 left-0 w-full bg-[#0F172A] border-t border-slate-800 p-4 flex justify-around items-center z-50">
-                <Link href="/" className="flex flex-col items-center text-slate-400 hover:text-white">
+                <Link href="/dashboard" className="flex flex-col items-center text-slate-400 hover:text-white">
                     <Activity className="h-6 w-6" />
                     <span className="text-[10px] mt-1">Scan</span>
                 </Link>
                 <Link href="/historique" className="flex flex-col items-center text-blue-500">
                     <History className="h-6 w-6" />
-                    <span className="text-[10px] mt-1 font-bold">Historique</span>
+                    <span className="text-[10px] mt-1 font-bold">History</span>
                 </Link>
                 <button onClick={deconnexion} className="flex flex-col items-center text-slate-400 hover:text-red-500">
                     <LogOut className="h-6 w-6" />
-                    <span className="text-[10px] mt-1">Sortir</span>
+                    <span className="text-[10px] mt-1">Exit</span>
                 </button>
             </div>
 
-            {/* CONTENU */}
+            {/* CONTENT */}
             <main className="md:ml-64 p-8 w-full">
-                <h1 className="text-3xl font-bold mb-6">Historique des Analyses</h1>
+                <h1 className="text-3xl font-bold mb-6">Analysis History</h1>
 
                 <div className="mb-8 p-4 bg-slate-900 border border-slate-800 rounded-lg inline-block">
-                    <span className="text-slate-400 text-sm">Risque Moyen Global : </span>
+                    <span className="text-slate-400 text-sm">Average Risk Score: </span>
                     <span className={`font-bold ${avgRisk > 50 ? 'text-red-400' : 'text-green-400'}`}>{avgRisk}/100</span>
                 </div>
 
@@ -127,7 +126,7 @@ export default function HistoriquePage() {
                             )}
                         </div>
                     ))}
-                    {historique.length === 0 && <p className="text-slate-500">Aucun historique trouvé.</p>}
+                    {historique.length === 0 && <p className="text-slate-500">No history found.</p>}
                 </div>
             </main>
         </div>

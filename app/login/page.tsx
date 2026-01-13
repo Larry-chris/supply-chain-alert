@@ -18,21 +18,22 @@ export default function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
-    const [isSignUp, setIsSignUp] = useState(false) // Pour basculer entre Connexion et Inscription
+    const [isSignUp, setIsSignUp] = useState(false)
 
     async function handleAuth() {
         setLoading(true)
         try {
             if (isSignUp) {
-                // INSCRIPTION
                 const { error } = await supabase.auth.signUp({ email, password })
                 if (error) throw error
-                alert("Compte créé ! Vérifiez vos emails ou connectez-vous directement.")
+                alert("Account created! Logging you in...")
+                // Auto login after signup in Supabase defaults
+                const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+                if (!signInError) router.push("/dashboard")
             } else {
-                // CONNEXION
                 const { error } = await supabase.auth.signInWithPassword({ email, password })
                 if (error) throw error
-                router.push("/dashboard") // Redirection vers le Dashboard
+                router.push("/dashboard")
             }
         } catch (error: any) {
             alert(error.message)
@@ -49,9 +50,9 @@ export default function LoginPage() {
                         <ShieldAlert className="h-12 w-12 text-blue-500" />
                     </div>
                     <CardTitle className="text-2xl text-white">
-                        {isSignUp ? "Créer un compte" : "Connexion SupplyAlert"}
+                        {isSignUp ? "Create Account" : "SupplyAlert Login"}
                     </CardTitle>
-                    <p className="text-slate-400 text-sm">Accédez à vos analyses sécurisées</p>
+                    <p className="text-slate-400 text-sm">Access your secure analysis dashboard</p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
@@ -63,7 +64,7 @@ export default function LoginPage() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-500">MOT DE PASSE</label>
+                        <label className="text-xs font-bold text-slate-500">PASSWORD</label>
                         <Input
                             type="password"
                             className="bg-slate-900 border-slate-600 text-white"
@@ -73,7 +74,7 @@ export default function LoginPage() {
 
                     <Button onClick={handleAuth} disabled={loading} className="w-full bg-blue-600 hover:bg-blue-500">
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {isSignUp ? "S'inscrire" : "Se connecter"}
+                        {isSignUp ? "Sign Up" : "Log In"}
                     </Button>
 
                     <div className="text-center">
@@ -81,7 +82,7 @@ export default function LoginPage() {
                             onClick={() => setIsSignUp(!isSignUp)}
                             className="text-sm text-slate-400 hover:text-white underline"
                         >
-                            {isSignUp ? "Déjà un compte ? Se connecter" : "Pas de compte ? S'inscrire"}
+                            {isSignUp ? "Already have an account? Log In" : "No account? Sign Up"}
                         </button>
                     </div>
                 </CardContent>
